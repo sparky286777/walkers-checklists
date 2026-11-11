@@ -94,3 +94,11 @@ function getSheet_(name, headers) {
 function reply_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
+
+// Clears every entry from both tabs, keeping the headings. Run from the editor only when you want a fresh start.
+function clearRecords() {
+  ['Sign-offs', 'All checks'].forEach(function (name) {
+    var sh = SpreadsheetApp.openById(SHEET_ID).getSheetByName(name);
+    if (sh && sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
+  });
+}
