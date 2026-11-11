@@ -20,6 +20,7 @@ var CHECK_HEADERS   = ['Received', 'Date', 'Checklist', 'Section', 'Check', 'Ans
 
 // Run this once from the editor (select "setup" and press Run) to create the tabs.
 function setup() {
+  SpreadsheetApp.openById(SHEET_ID).setSpreadsheetTimeZone('Europe/London');
   getSheet_('Sign-offs', SIGNOFF_HEADERS);
   getSheet_('All checks', CHECK_HEADERS);
 }
