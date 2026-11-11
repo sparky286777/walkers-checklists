@@ -132,6 +132,13 @@
   .so label{white-space:nowrap;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
   .so input{width:240px;background:#fff;border:1.5px solid #CFC6B8;border-radius:8px;padding:10px 11px;font-size:15px;font-weight:600}
   .so input.bad{border-color:var(--red)}
+  .signed{margin-top:22px;border-radius:16px;background:#EAF5EE;border:1px solid #BFDFCB;padding:22px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .signed .si{width:48px;height:48px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;flex:none}
+  .signed b{display:block;font-size:17px}
+  .signed span{color:var(--muted);font-size:14px}
+  .signed .btn{margin-left:auto}
+  .tab .ok{color:#7FCB98;opacity:1}
+  .tab.on .ok{color:#fff}
   .formerr{width:100%;color:var(--red);font-size:14px;font-weight:500;text-align:right}
 
   /* ---------- Signed off ---------- */
@@ -256,25 +263,28 @@
   </div>
 </section>
 
-<!-- Daily checklist -->
-<section id="daily" class="screen split" style="--accent:var(--red)" hidden>
+<!-- Checklist screen (Daily, and each Weekly zone) -->
+<section id="list" class="screen split" hidden>
   <div class="side">
     <button class="side-back" data-home><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All checklists</button>
     <img class="logo" data-logo alt="Walkers of Whitehall">
-    <h1 class="serif">Daily</h1>
-    <div class="d" id="dDate"></div>
-    <div class="tabs" id="dTabs"></div>
-    <div class="sum"><div class="l">So far today</div><div class="nn">
+    <h1 class="serif" id="lTitle">Daily</h1>
+    <div class="d" id="lDate"></div>
+    <div class="tabs" id="lTabs"></div>
+    <div class="sum"><div class="l" id="sLabel">So far today</div><div class="nn">
       <div class="g"><b id="sOk">0</b>Complete</div><div class="r"><b id="sNo">0</b>Not done</div><div><b id="sTodo">0</b>To go</div>
     </div></div>
   </div>
   <div class="sheet">
-    <div class="sheet-hd"><div><h2 class="serif" id="dSection">Opening checks</h2><p>Daily kitchen checklist</p></div>
-      <div class="meta"><span>Date</span><b id="dDateShort"></b></div></div>
-    <div class="cols"><span></span><span>Check</span><span class="c">Complete</span><span class="c">Not completed</span><span>Reason if not completed</span></div>
-    <div id="rows"></div>
-    <div class="note">A check marked not completed can't be signed off without a reason.</div>
-    <div class="foot" id="dFoot"></div>
+    <div class="sheet-hd"><div><h2 class="serif" id="lSection">Opening checks</h2><p id="lSub">Daily kitchen checklist</p></div>
+      <div class="meta"><span id="lMetaLabel">Date</span><b id="lMetaVal"></b></div></div>
+    <div class="signed" id="lSigned" hidden></div>
+    <div id="lBody">
+      <div class="cols"><span></span><span>Check</span><span class="c">Complete</span><span class="c">Not completed</span><span>Reason if not completed</span></div>
+      <div id="rows"></div>
+      <div class="note">A check marked not completed can't be signed off without a reason.</div>
+    </div>
+    <div class="foot" id="lFoot"></div>
   </div>
 </section>
 
@@ -340,7 +350,63 @@
       "Equipment, gas and extraction switched off"
     ]
   };
-  var SECTIONS = Object.keys(DAILY);
+  // ===== Weekly checklists (one per zone, each signed off separately) =====
+  var WEEKLY = {
+    "Main Kitchen": [
+      "Dishwasher deep cleaned inside, including corners, door channels and the tops of the wash arms, with no biofilm or pink mould",
+      "Pre-rinse spray arm, valve and head descaled",
+      "Blizzard undercounter fridge lip unclipped, and the grease, coolant and debris underneath cleaned out",
+      "Under-counter fridges pulled out and cleaned behind and underneath",
+      "Extraction canopy filters taken out, soaked and degreased",
+      "Fryer station, gastronorm rack and stored gastronorms deep cleaned",
+      "Probe thermometer calibrated (iced water and boiling water) and logged on Alert65",
+      "Allergen matrix checked against the current menu and any specials",
+      "Wall notices laminated, and fryer signs fixed with clear tape rather than masking tape",
+      "\"Extremely Hot Water\" sign in place above the pot wash sink",
+      "Dangerous-machine sign on the stick blender, and no damaged equipment kept in the kitchen",
+      "Chemicals in their labelled original containers, data sheets available, and the granular salt tub labelled \"Cleaning use only\"",
+      "Electric fly killer working, with the catch tray emptied",
+      "Fire extinguishers and fire blanket in place and unobstructed, with the fire exit route clear",
+      "First aid kit stocked, including blue detectable plasters"
+    ],
+    "Upstairs Store": [
+      "Full date check of every item, with anything out of date thrown away, including oils and spices",
+      "Every opened product on a day label with every section filled in and a real use-by date, not \"See BB\"",
+      "One product per box, and nothing added to a box already labelled for something else",
+      "Old label residue removed from all boxes and tubs, whether in use or not",
+      "Ensure NRTE and RTE boxes are in satisfactory condition",
+      "Only products from approved suppliers, with no supermarket items",
+      "Ensure egg deliveries are labelled with the date they arrived, and flour is sealed and stored away from the eggs",
+      "Ensure stock rotation is first in, first out",
+      "Shelves cleaned (including the shelves inside the fridges), nothing stored on the floor, and spills cleaned up",
+      "Pest check done: droppings, gnawed packaging, holes or gaps",
+      "Stairs to the store swept, mopped and safe, with no missing floor tiles or stair nosing",
+      "Walls sound, with any damage or exposed brickwork reported"
+    ],
+    "Downstairs Store": [
+      "Ready-to-eat stored above or apart from raw, and never side by side",
+      "Every box labelled and fully covered, with lids closed and liners tucked in",
+      "Full date check, with anything out of date thrown away",
+      "Fridge door seals cleaned inside the folds, and any splits reported",
+      "Fridge base, kick plate, vent and the floor in front cleaned",
+      "Shelves cleaned, nothing stored on the floor, and stock rotated first in, first out",
+      "Pest check done: droppings, gnawed packaging, holes or gaps",
+      "Walkways clear, with nothing stored where it could be tripped over",
+      "Steps and floor in good repair, with any damage reported",
+      "Lighting working throughout",
+      "Chemicals stored separately from food"
+    ]
+  };
+
+  // How each checklist behaves.
+  //  together: true  -> the tabs are parts of ONE checklist with a single sign-off (Daily: Opening + Closing)
+  //  together: false -> each tab is its own checklist with its own sign-off (Weekly: one per zone)
+  var LISTS = {
+    daily:  {title:'Daily',  accent:'var(--red)',  period:'day',  together:true,  tabs:DAILY,
+             sub:'Daily kitchen checklist',  sumLabel:'So far today'},
+    weekly: {title:'Weekly', accent:'var(--gold)', period:'week', together:false, tabs:WEEKLY,
+             sub:'Weekly kitchen checklist', sumLabel:'This zone so far'}
+  };
 
   var ICONS = {
     arrow:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
@@ -356,7 +422,7 @@
   function $(id){ return document.getElementById(id); }
   var LOGO_SRC = document.querySelector('#lock img').src;
   document.querySelectorAll('img[data-logo]').forEach(function(im){ im.src = LOGO_SRC; });
-  var screens = ['lock','dash','zones','daily','done'].map($);
+  var screens = ['lock','dash','zones','list','done'].map($);
   function show(el){ screens.forEach(function(s){ s.hidden = (s !== el); }); window.scrollTo(0,0); }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
@@ -410,7 +476,7 @@
   document.querySelectorAll('[data-open]').forEach(function(t){
     t.addEventListener('click', function(){
       var k = t.getAttribute('data-open');
-      if (k === 'daily') openDaily(); else openZones(k);
+      if (k === 'monthly') openZones(k); else openList(k);
     });
   });
 
@@ -437,42 +503,62 @@
   }
   $('zTabs').addEventListener('click', function(e){ var t=e.target.closest('[data-zone]'); if (t) pickZone(t.getAttribute('data-zone')); });
 
-  // ===== Daily: state (saved on this device until signed off) =====
-  var KEY = 'walkers-daily-v1', st;
-  function blank(){ return {day: todayKey(), section: SECTIONS[0], ans: {}, name: ''}; }
-  function load(){
-    try { st = JSON.parse(localStorage.getItem(KEY)); } catch(e) { st = null; }
-    if (!st || st.day !== todayKey() || !st.ans) st = blank();
-  }
-  function save(){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {} }
-  function id(sec, i){ return sec + ':' + i; }
+  // ===== Checklist engine (state saved on this device until signed off) =====
+  var cur, L, st, sending = false;
 
-  function counts(sec){
-    var list = sec ? [sec] : SECTIONS, ok=0, no=0, total=0;
-    list.forEach(function(s){ DAILY[s].forEach(function(_,i){ total++; var a=st.ans[id(s,i)]; if (a&&a.a==='ok') ok++; if (a&&a.a==='no') no++; }); });
+  function mondayOf(d){ var m = new Date(d); m.setHours(0,0,0,0); m.setDate(m.getDate() - ((m.getDay()+6)%7)); return m; }
+  function periodKey(){ var d = L.period === 'week' ? mondayOf(new Date()) : new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  function tabNames(){ return Object.keys(L.tabs); }
+  function storeKey(){ return 'walkers-' + cur + '-v1'; }
+  function blank(){ return {period: periodKey(), tab: tabNames()[0], ans: {}, names: {}, signed: {}}; }
+  function load(){
+    try { st = JSON.parse(localStorage.getItem(storeKey())); } catch(e) { st = null; }
+    if (!st || st.period !== periodKey() || !st.ans) st = blank();
+    st.names = st.names || {}; st.signed = st.signed || {};
+    if (tabNames().indexOf(st.tab) < 0) st.tab = tabNames()[0];
+  }
+  function save(){ try { localStorage.setItem(storeKey(), JSON.stringify(st)); } catch(e) {} }
+  function id(tab, i){ return tab + ':' + i; }
+  function scope(){ return L.together ? 'all' : st.tab; }
+  function scopeTabs(){ return L.together ? tabNames() : [st.tab]; }
+
+  function counts(tabs){
+    var ok=0, no=0, total=0;
+    tabs.forEach(function(t){ L.tabs[t].forEach(function(_,i){ total++; var a=st.ans[id(t,i)]; if (a&&a.a==='ok') ok++; if (a&&a.a==='no') no++; }); });
     return {ok:ok, no:no, todo:total-ok-no, total:total};
   }
 
-  function openDaily(){
-    load();
+  function openList(key){
+    cur = key; L = LISTS[key]; load();
     var now = new Date();
-    $('dDate').textContent = longDate(now) + ' · Kitchen';
-    $('dDateShort').textContent = ukDate(now);
-    renderDaily();
-    show($('daily'));
+    $('list').style.setProperty('--accent', L.accent);
+    $('lTitle').textContent = L.title;
+    $('lSub').textContent = L.sub;
+    $('sLabel').textContent = L.sumLabel;
+    if (L.period === 'week') {
+      var mon = mondayOf(now);
+      $('lDate').textContent = 'Week commencing ' + mon.toLocaleDateString('en-GB',{day:'numeric',month:'long'});
+      $('lMetaLabel').textContent = 'Week of'; $('lMetaVal').textContent = ukDate(mon);
+    } else {
+      $('lDate').textContent = longDate(now) + ' · Kitchen';
+      $('lMetaLabel').textContent = 'Date'; $('lMetaVal').textContent = ukDate(now);
+    }
+    render();
+    show($('list'));
   }
 
   function renderTabs(){
-    $('dTabs').innerHTML = SECTIONS.map(function(s){
-      var c = counts(s);
-      return '<button class="tab'+(s===st.section?' on':'')+'" data-sec="'+s+'">'+s+' <span>'+(c.ok+c.no)+' / '+c.total+'</span></button>';
+    $('lTabs').innerHTML = tabNames().map(function(t){
+      var c = counts([t]), sig = !L.together && st.signed[t];
+      var right = sig ? '<span class="ok">Signed off ✓</span>' : '<span>'+(c.ok+c.no)+' / '+c.total+'</span>';
+      return '<button class="tab'+(t===st.tab?' on':'')+'" data-tab="'+esc(t)+'">'+esc(t)+' '+right+'</button>';
     }).join('');
-    var all = counts();
-    $('sOk').textContent = all.ok; $('sNo').textContent = all.no; $('sTodo').textContent = all.todo;
+    var c = counts(scopeTabs());
+    $('sOk').textContent = c.ok; $('sNo').textContent = c.no; $('sTodo').textContent = c.todo;
   }
 
-  function rowHtml(sec, i, text){
-    var a = st.ans[id(sec,i)] || {}, isOk = a.a==='ok', isNo = a.a==='no';
+  function rowHtml(tab, i, text){
+    var a = st.ans[id(tab,i)] || {}, isOk = a.a==='ok', isNo = a.a==='no';
     var rz = isNo
       ? '<input class="reason" data-reason="'+i+'" placeholder="Why wasn\'t this done?" value="'+esc(a.r||'')+'">'
       : '<span class="dash-mark">–</span>';
@@ -483,112 +569,130 @@
       '<span class="rz">'+rz+'</span></div>';
   }
 
-  function renderDaily(){
-    var sec = st.section, last = SECTIONS.indexOf(sec) === SECTIONS.length-1;
-    $('dSection').textContent = sec + ' checks';
-    $('rows').innerHTML = DAILY[sec].map(function(t,i){ return rowHtml(sec,i,t); }).join('');
+  function signBox(){
+    return '<span class="so"><label for="signName">Your name</label><input id="signName" autocomplete="off" value="'+esc(st.names[scope()]||'')+'"><button class="btn k" id="signBtn">Sign off</button></span>'+
+      '<div class="formerr" id="formErr"></div>';
+  }
+
+  function render(){
+    var tab = st.tab, names = tabNames(), idx = names.indexOf(tab);
+    $('lSection').textContent = L.together ? tab + ' checks' : tab;
     renderTabs();
-    if (!last) {
-      var next = SECTIONS[SECTIONS.indexOf(sec)+1];
-      $('dFoot').innerHTML = '<span></span><button class="btn k" data-go="'+next+'">Next: '+next+' checks '+ICONS.arrow+'</button>';
+
+    var sig = st.signed[scope()];
+    $('lSigned').hidden = !sig; $('lBody').hidden = !!sig;
+    document.querySelector('#list .sum').style.visibility = sig ? 'hidden' : '';
+    if (sig) {
+      $('lSigned').innerHTML = '<div class="si">'+ICONS.tick+'</div><div><b>Signed off by '+esc(sig.by)+'</b><span>'+esc(sig.when)+
+'</span></div>';
+      $('lFoot').innerHTML = '';
+      return;
+    }
+
+    $('rows').innerHTML = L.tabs[tab].map(function(t,i){ return rowHtml(tab,i,t); }).join('');
+    if (L.together && idx < names.length-1) {
+      var next = names[idx+1];
+      $('lFoot').innerHTML = '<span></span><button class="btn k" data-go="'+esc(next)+'">Next: '+esc(next)+' checks '+ICONS.arrow+'</button>';
+    } else if (L.together) {
+      var prev = names[idx-1];
+      $('lFoot').innerHTML = '<button class="btn l" data-go="'+esc(prev)+'">'+ICONS.back+' '+esc(prev)+'</button>' + signBox();
     } else {
-      var prev = SECTIONS[SECTIONS.indexOf(sec)-1];
-      $('dFoot').innerHTML = '<button class="btn l" data-go="'+prev+'">'+ICONS.back+' '+prev+'</button>'+
-        '<span class="so"><label for="signName">Your name</label><input id="signName" autocomplete="off" value="'+esc(st.name)+'"><button class="btn k" id="signBtn">Sign off</button></span>'+
-        '<div class="formerr" id="formErr"></div>';
+      $('lFoot').innerHTML = '<span></span>' + signBox();
     }
   }
 
-  $('dTabs').addEventListener('click', function(e){
-    var t = e.target.closest('[data-sec]'); if (!t) return;
-    st.section = t.getAttribute('data-sec'); save(); renderDaily(); window.scrollTo(0,0);
-  });
+  function goTab(t){ st.tab = t; save(); render(); window.scrollTo(0,0); }
+  $('lTabs').addEventListener('click', function(e){ var t = e.target.closest('[data-tab]'); if (t) goTab(t.getAttribute('data-tab')); });
 
   $('rows').addEventListener('click', function(e){
     var b = e.target.closest('[data-set]'); if (!b) return;
-    var k = id(st.section, +b.getAttribute('data-i')), v = b.getAttribute('data-set'), cur = st.ans[k] || {};
-    if (cur.a === v) delete st.ans[k];               // tap again to clear
-    else st.ans[k] = {a: v, r: v==='no' ? (cur.r||'') : ''};
+    var i = +b.getAttribute('data-i'), k = id(st.tab, i), v = b.getAttribute('data-set'), c = st.ans[k] || {};
+    if (c.a === v) delete st.ans[k];               // tap again to clear
+    else st.ans[k] = {a: v, r: v==='no' ? (c.r||'') : ''};
     save();
-    var i = +b.getAttribute('data-i'), row = b.closest('.crow');
-    row.outerHTML = rowHtml(st.section, i, DAILY[st.section][i]);
+    b.closest('.crow').outerHTML = rowHtml(st.tab, i, L.tabs[st.tab][i]);
     renderTabs();
     if (v === 'no' && st.ans[k]) { var inp = document.querySelector('[data-reason="'+i+'"]'); if (inp) inp.focus(); }
   });
 
   $('rows').addEventListener('input', function(e){
     var inp = e.target.closest('[data-reason]'); if (!inp) return;
-    var k = id(st.section, +inp.getAttribute('data-reason'));
+    var k = id(st.tab, +inp.getAttribute('data-reason'));
     if (st.ans[k]) { st.ans[k].r = inp.value; save(); }
     inp.classList.remove('bad');
   });
 
-  $('dFoot').addEventListener('click', function(e){
+  $('lFoot').addEventListener('click', function(e){
     var g = e.target.closest('[data-go]');
-    if (g) { st.section = g.getAttribute('data-go'); save(); renderDaily(); window.scrollTo(0,0); return; }
+    if (g) { goTab(g.getAttribute('data-go')); return; }
     if (e.target.closest('#signBtn')) signOff();
   });
-  $('dFoot').addEventListener('input', function(e){
-    if (e.target.id === 'signName') { st.name = e.target.value; save(); e.target.classList.remove('bad'); }
+  $('lFoot').addEventListener('input', function(e){
+    if (e.target.id === 'signName') { st.names[scope()] = e.target.value; save(); e.target.classList.remove('bad'); }
   });
 
   function firstProblem(){
-    for (var s=0; s<SECTIONS.length; s++) {
-      var sec = SECTIONS[s];
-      for (var i=0; i<DAILY[sec].length; i++) {
-        var a = st.ans[id(sec,i)];
-        if (!a) return {sec:sec, i:i, kind:'unanswered'};
-        if (a.a==='no' && !String(a.r||'').trim()) return {sec:sec, i:i, kind:'reason'};
+    var tabs = scopeTabs();
+    for (var s=0; s<tabs.length; s++) {
+      for (var i=0; i<L.tabs[tabs[s]].length; i++) {
+        var a = st.ans[id(tabs[s],i)];
+        if (!a) return {tab:tabs[s], i:i, kind:'unanswered'};
+        if (a.a==='no' && !String(a.r||'').trim()) return {tab:tabs[s], i:i, kind:'reason'};
       }
     }
     return null;
   }
 
   function showProblem(p){
-    if (st.section !== p.sec) { st.section = p.sec; save(); renderDaily(); }
+    if (st.tab !== p.tab) { st.tab = p.tab; save(); render(); }
     var row = document.querySelector('[data-row="'+p.i+'"]');
-    if (row) {
-      row.scrollIntoView({behavior:'smooth', block:'center'});
-      if (p.kind === 'reason') { var inp=row.querySelector('.reason'); if (inp) { inp.classList.add('bad'); inp.focus(); } }
-      else { row.classList.add('missing'); setTimeout(function(){ row.classList.remove('missing'); }, 2500); }
-    }
+    if (!row) return;
+    row.scrollIntoView({behavior:'smooth', block:'center'});
+    if (p.kind === 'reason') { var inp = row.querySelector('.reason'); if (inp) { inp.classList.add('bad'); inp.focus(); } }
+    else { row.classList.add('missing'); setTimeout(function(){ row.classList.remove('missing'); }, 2500); }
   }
 
-  var sending = false;
   function signOff(){
     if (sending) return;
-    var err = $('formErr'), p = firstProblem();
+    var p = firstProblem();
     if (p) {
-      var c = counts();
+      var c = counts(scopeTabs());
       var text = p.kind === 'reason'
         ? 'Add a reason for every check marked not completed.'
         : c.todo + ' check' + (c.todo===1?' is':'s are') + ' still to answer.';
       showProblem(p);
-      var e2 = $('formErr'); if (e2) e2.textContent = text;
+      var fe = $('formErr'); if (fe) fe.textContent = text;
       return;
     }
-    var name = String(st.name||'').trim();
-    if (!name) { err.textContent = 'Enter your name to sign off.'; $('signName').classList.add('bad'); $('signName').focus(); return; }
+    var name = String(st.names[scope()]||'').trim();
+    if (!name) { $('formErr').textContent = 'Enter your name to sign off.'; $('signName').classList.add('bad'); $('signName').focus(); return; }
 
     var now = new Date(), checks = [];
-    SECTIONS.forEach(function(sec){ DAILY[sec].forEach(function(t,i){
-      var a = st.ans[id(sec,i)];
-      checks.push({section: sec, check: t, answer: a.a==='ok' ? 'Complete' : 'Not completed', reason: a.a==='no' ? a.r.trim() : ''});
+    scopeTabs().forEach(function(t){ L.tabs[t].forEach(function(text,i){
+      var a = st.ans[id(t,i)];
+      checks.push({section: t, check: text, answer: a.a==='ok' ? 'Complete' : 'Not completed', reason: a.a==='no' ? a.r.trim() : ''});
     }); });
-    var payload = {checklist: 'Daily', date: ukDate(now), signedOffBy: name, checks: checks};
+    var label = L.together ? L.title : L.title + ' – ' + st.tab;
+    var payload = {checklist: label, date: ukDate(now), signedOffBy: name, checks: checks};
     var notDone = checks.filter(function(c){ return c.answer==='Not completed'; }).length;
-    var time = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    var when = longDate(now) + ' at ' + now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+    function markSigned(sent){
+      var sc = scope();
+      st.signed[sc] = {by: name, when: when};
+      scopeTabs().forEach(function(t){ L.tabs[t].forEach(function(_,i){ delete st.ans[id(t,i)]; }); });
+      save();
+    }
 
     if (!SHEET_URL) {
-      finish(false, 'Not sent yet', 'This checklist isn’t connected to the managers’ Google Sheet yet, so this sign-off was not saved. Your answers are still on this device.');
+      finish(false, 'Not sent yet', 'The ' + label + ' checklist isn’t connected to the managers’ Google Sheet yet, so this sign-off was not saved. Your answers are still on this device.');
       return;
     }
-    sending = true; $('signBtn').textContent = 'Sending…'; err.textContent = '';
+    sending = true; $('signBtn').textContent = 'Sending…'; $('formErr').textContent = '';
     fetch(SHEET_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)})
       .then(function(){
-        sending = false;
-        st = blank(); save();
-        finish(true, 'Signed off', 'Signed off by ' + name + ' at ' + time + '. ' +
+        sending = false; markSigned(true);
+        finish(true, 'Signed off', label + ' signed off by ' + name + ', ' + when + '. ' +
           (notDone ? notDone + ' check' + (notDone===1?' was':'s were') + ' marked not completed and sent to the managers.' : 'Every check was completed.'));
       })
       .catch(function(){
