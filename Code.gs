@@ -10,6 +10,9 @@
  * whenever a checklist is signed off with something not completed.
  */
 
+// The Google Sheet the sign-offs are written to (the long id in its web address).
+var SHEET_ID = '1QN3FM_OAlKO3Fw5wZoeS6_w_8fe8qQ4fY4UgITPrX7w';
+
 var MANAGER_EMAILS = [];   // e.g. ['name@youngs.co.uk', 'other@youngs.co.uk']
 
 var SIGNOFF_HEADERS = ['Received', 'Date', 'Checklist', 'Signed off by', 'Complete', 'Not completed', 'Not completed – details'];
@@ -59,7 +62,7 @@ function doPost(e) {
         to: MANAGER_EMAILS.join(','),
         subject: 'Walkers ' + (data.checklist || '') + ' checklist: ' + notDone.length + ' not completed',
         body: name + ' signed off the ' + (data.checklist || '') + ' kitchen checklist on ' + (data.date || '') + '.\n\n' +
-              'Not completed:\n' + details + '\n\nFull record: ' + SpreadsheetApp.getActive().getUrl()
+              'Not completed:\n' + details + '\n\nFull record: ' + SpreadsheetApp.openById(SHEET_ID).getUrl()
       });
     }
 
@@ -77,7 +80,7 @@ function doGet() {
 }
 
 function getSheet_(name, headers) {
-  var ss = SpreadsheetApp.getActive();
+  var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(headers);
