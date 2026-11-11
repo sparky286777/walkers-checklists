@@ -628,6 +628,7 @@
     var k = id(st.tab, +inp.getAttribute('data-reason'));
     if (st.ans[k]) { st.ans[k].r = inp.value; save(); }
     inp.classList.remove('bad');
+    var fe = $('formErr'); if (fe) fe.textContent = '';
   });
 
   $('lFoot').addEventListener('click', function(e){
@@ -636,7 +637,7 @@
     if (e.target.closest('#signBtn')) signOff();
   });
   $('lFoot').addEventListener('input', function(e){
-    if (e.target.id === 'signName') { st.names[scope()] = e.target.value; save(); e.target.classList.remove('bad'); }
+    if (e.target.id === 'signName') { st.names[scope()] = e.target.value; save(); e.target.classList.remove('bad'); var fe = $('formErr'); if (fe) fe.textContent = ''; }
   });
 
   function firstProblem(){
