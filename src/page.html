@@ -87,7 +87,7 @@
   .side .d{font-size:13px;color:#A9A49B;margin-top:4px}
   .tabs{margin-top:24px;display:flex;flex-direction:column;gap:8px}
   .tab{padding:15px 14px;border-radius:12px;background:#22252C;font-size:15px;font-weight:500;text-align:left;color:#F3EEE6;display:flex;justify-content:space-between;gap:10px}
-  .tab span{opacity:.75}
+  .tab span{opacity:.75;white-space:nowrap;align-self:center}
   .tab.on{background:var(--accent);color:#fff}
   .sum{margin-top:auto;background:#22252C;border-radius:14px;padding:16px;margin-top:28px}
   .sum .l{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#A9A49B}
@@ -244,25 +244,6 @@
   </div>
 </section>
 
-<!-- Weekly / Monthly: three zones -->
-<section id="zones" class="screen split" hidden>
-  <div class="side">
-    <button class="side-back" data-home><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All checklists</button>
-    <img class="logo" data-logo alt="Walkers of Whitehall">
-    <h1 class="serif" id="zTitle">Weekly</h1>
-    <div class="d" id="zDate"></div>
-    <div class="tabs" id="zTabs">
-      <button class="tab on" data-zone="Main Kitchen">Main Kitchen</button>
-      <button class="tab" data-zone="Upstairs Store">Upstairs Store</button>
-      <button class="tab" data-zone="Downstairs Store">Downstairs Store</button>
-    </div>
-  </div>
-  <div class="sheet">
-    <div class="sheet-hd"><div><h2 class="serif" id="zName">Main Kitchen</h2><p id="zSub">Weekly kitchen checklist</p></div></div>
-    <div class="soon"><b>Checklist coming soon</b><span id="zSoon">The checks for this zone are being added.</span></div>
-  </div>
-</section>
-
 <!-- Checklist screen (Daily, and each Weekly zone) -->
 <section id="list" class="screen split" hidden>
   <div class="side">
@@ -398,6 +379,50 @@
     ]
   };
 
+  // ===== Monthly checklists (one per zone, each signed off separately) =====
+  var MONTHLY = {
+      "Main Kitchen": [
+          "All relevant monthly checks on Alert65 completed",
+          "HACCP and safe methods reviewed, with any menu, equipment or process changes updated on Alert65",
+          "Allergen matrix and green folder updated for any menu, recipe or supplier changes",
+          "Recurring problems from the daily and weekly sign-offs (anything not completed three or more times) reviewed and acted on",
+          "Probe thermometer calibration logged for every week this month",
+          "Team training up to date on Alert65 (HACCP sign-off, CPL modules, task risk assessments), with new starters trained",
+          "Cooking range, ovens, salamander and fryers pulled out where safe, and cleaned behind and underneath, including the walls",
+          "Walls, ceiling, light fittings and the outside of the extraction canopy deep cleaned, with all lights working",
+          "Fridge and freezer seals checked for splits, and freezers free of ice build-up",
+          "Chopping boards and knives checked, with scored boards and damaged knives replaced",
+          "Fire extinguishers within their service date, fire blanket in place, and fire action signs displayed",
+          "First aid kit and burn kit stocked and in date",
+          "COSHH data sheets available for every chemical in use",
+          "Latest pest control report reviewed and its recommendations acted on, with gaps and holes reported",
+          "Any damage to floors, walls or equipment logged on ProNett, and progress chased",
+          "Site certificates in date and on ProNett: gas safety, electrical (EICR), PAT, extraction duct clean, fire alarm and emergency lighting. Fire drill done in the last six months and logged, and EHO and audit actions closed out on Alert65"
+      ],
+      "Upstairs Store": [
+          "All relevant monthly checks on Alert65 completed",
+          "Fridges emptied and deep cleaned, including shelves, seals and drains, with seals checked for splits",
+          "Shelving moved, and the floor behind and underneath cleaned",
+          "Walls, ceiling and light fittings cleaned, with lighting working",
+          "Rarely used dry goods (spices, flours, sauces) checked against their best-before dates",
+          "Storage boxes and lids checked: cracked or broken ones removed and replacements ordered",
+          "Supplier list checked, with any new suppliers recorded and only approved suppliers in use",
+          "Day labels and pens stocked so one labelling system can be used",
+          "Stairs, floor tiles, stair nosing and walls in good repair, with damage reported on ProNett",
+          "Pest-proofing checked: gaps, holes, door seals, and no signs of activity"
+      ],
+      "Downstairs Store": [
+          "All relevant monthly checks on Alert65 completed",
+          "Fridges emptied and deep cleaned, including behind the kick plates, the seals and the condenser grille",
+          "Freezers checked for ice build-up, with a defrost arranged if needed",
+          "Floor in good repair, with any damage reported on ProNett",
+          "Chemicals in labelled containers with lids on, kept away from food",
+          "First aid kit, burn kit and eye-wash station in the office stocked and in date",
+          "Exit routes clear, with emergency lighting and fire exit signs working",
+          "No loose cables, exposed wiring or damaged sockets, with any reported"
+      ]
+  };
+
   // How each checklist behaves.
   //  together: true  -> the tabs are parts of ONE checklist with a single sign-off (Daily: Opening + Closing)
   //  together: false -> each tab is its own checklist with its own sign-off (Weekly: one per zone)
@@ -405,7 +430,9 @@
     daily:  {title:'Daily',  accent:'var(--red)',  period:'day',  together:true,  tabs:DAILY,
              sub:'Daily kitchen checklist',  sumLabel:'So far today'},
     weekly: {title:'Weekly', accent:'var(--gold)', period:'week', together:false, tabs:WEEKLY,
-             sub:'Weekly kitchen checklist', sumLabel:'This zone so far'}
+             sub:'Weekly kitchen checklist', sumLabel:'This zone so far'},
+    monthly:{title:'Monthly',accent:'var(--blue)', period:'month',together:false, tabs:MONTHLY,
+             sub:'Monthly kitchen checklist', sumLabel:'This zone so far'}
   };
 
   var ICONS = {
@@ -422,7 +449,7 @@
   function $(id){ return document.getElementById(id); }
   var LOGO_SRC = document.querySelector('#lock img').src;
   document.querySelectorAll('img[data-logo]').forEach(function(im){ im.src = LOGO_SRC; });
-  var screens = ['lock','dash','zones','list','done'].map($);
+  var screens = ['lock','dash','list','done'].map($);
   function show(el){ screens.forEach(function(s){ s.hidden = (s !== el); }); window.scrollTo(0,0); }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
@@ -476,38 +503,15 @@
   document.querySelectorAll('[data-open]').forEach(function(t){
     t.addEventListener('click', function(){
       var k = t.getAttribute('data-open');
-      if (k === 'monthly') openZones(k); else openList(k);
+      openList(k);
     });
   });
-
-  // ===== Weekly / Monthly zones =====
-  var zoneKind = 'weekly';
-  function openZones(kind){
-    zoneKind = kind;
-    var now = new Date(), z = $('zones');
-    z.style.setProperty('--accent', kind === 'weekly' ? 'var(--gold)' : 'var(--blue)');
-    $('zTitle').textContent = kind === 'weekly' ? 'Weekly' : 'Monthly';
-    if (kind === 'weekly') {
-      var mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7));
-      $('zDate').textContent = 'Week commencing ' + mon.toLocaleDateString('en-GB',{day:'numeric',month:'long'});
-    } else {
-      $('zDate').textContent = now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
-    }
-    pickZone('Main Kitchen');
-    show(z);
-  }
-  function pickZone(name){
-    document.querySelectorAll('#zTabs .tab').forEach(function(t){ t.classList.toggle('on', t.getAttribute('data-zone') === name); });
-    $('zName').textContent = name;
-    $('zSub').textContent = (zoneKind === 'weekly' ? 'Weekly' : 'Monthly') + ' kitchen checklist';
-  }
-  $('zTabs').addEventListener('click', function(e){ var t=e.target.closest('[data-zone]'); if (t) pickZone(t.getAttribute('data-zone')); });
 
   // ===== Checklist engine (state saved on this device until signed off) =====
   var cur, L, st, sending = false;
 
   function mondayOf(d){ var m = new Date(d); m.setHours(0,0,0,0); m.setDate(m.getDate() - ((m.getDay()+6)%7)); return m; }
-  function periodKey(){ var d = L.period === 'week' ? mondayOf(new Date()) : new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  function periodKey(){ var n = new Date(); if (L.period === 'month') return n.getFullYear()+'-'+(n.getMonth()+1); var d = L.period === 'week' ? mondayOf(n) : n; return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
   function tabNames(){ return Object.keys(L.tabs); }
   function storeKey(){ return 'walkers-' + cur + '-v1'; }
   function blank(){ return {period: periodKey(), tab: tabNames()[0], ans: {}, names: {}, signed: {}}; }
@@ -535,7 +539,11 @@
     $('lTitle').textContent = L.title;
     $('lSub').textContent = L.sub;
     $('sLabel').textContent = L.sumLabel;
-    if (L.period === 'week') {
+    if (L.period === 'month') {
+      var m = now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+      $('lDate').textContent = m;
+      $('lMetaLabel').textContent = 'Month'; $('lMetaVal').textContent = m;
+    } else if (L.period === 'week') {
       var mon = mondayOf(now);
       $('lDate').textContent = 'Week commencing ' + mon.toLocaleDateString('en-GB',{day:'numeric',month:'long'});
       $('lMetaLabel').textContent = 'Week of'; $('lMetaVal').textContent = ukDate(mon);
