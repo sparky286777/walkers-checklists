@@ -212,7 +212,7 @@
 <!-- Dashboard -->
 <section id="dash" class="screen" hidden>
   <div class="dash-head">
-    <img src="{{LOGO}}" alt="Walkers of Whitehall">
+    <img data-logo alt="Walkers of Whitehall">
     <h1 class="serif">Walkers of Whitehall<br>Compliance Checklists <em>– Kitchen</em></h1>
     <div class="grow"></div>
     <div class="date"><b id="today"></b>Tap a tile to start</div>
@@ -241,7 +241,7 @@
 <section id="zones" class="screen split" hidden>
   <div class="side">
     <button class="side-back" data-home><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All checklists</button>
-    <img class="logo" src="{{LOGO}}" alt="Walkers of Whitehall">
+    <img class="logo" data-logo alt="Walkers of Whitehall">
     <h1 class="serif" id="zTitle">Weekly</h1>
     <div class="d" id="zDate"></div>
     <div class="tabs" id="zTabs">
@@ -260,7 +260,7 @@
 <section id="daily" class="screen split" style="--accent:var(--red)" hidden>
   <div class="side">
     <button class="side-back" data-home><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>All checklists</button>
-    <img class="logo" src="{{LOGO}}" alt="Walkers of Whitehall">
+    <img class="logo" data-logo alt="Walkers of Whitehall">
     <h1 class="serif">Daily</h1>
     <div class="d" id="dDate"></div>
     <div class="tabs" id="dTabs"></div>
@@ -354,6 +354,8 @@
   document.querySelectorAll('[data-icon]').forEach(function(el){ el.innerHTML = ICONS[el.getAttribute('data-icon')]; });
 
   function $(id){ return document.getElementById(id); }
+  var LOGO_SRC = document.querySelector('#lock img').src;
+  document.querySelectorAll('img[data-logo]').forEach(function(im){ im.src = LOGO_SRC; });
   var screens = ['lock','dash','zones','daily','done'].map($);
   function show(el){ screens.forEach(function(s){ s.hidden = (s !== el); }); window.scrollTo(0,0); }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
