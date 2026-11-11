@@ -119,7 +119,7 @@
   .box.ok.on i{background:var(--green);border-color:var(--green)}
   .box.no.on i{background:var(--red);border-color:var(--red)}
   .box svg{opacity:0}.box.on svg{opacity:1}
-  .reason{width:100%;border:1.5px solid #E7B9B6;background:#fff;border-radius:8px;padding:9px 10px;font-size:14px;color:#5a2a28}
+  .reason{display:block;resize:none;overflow:hidden;line-height:1.35;font-family:inherit;width:100%;border:1.5px solid #E7B9B6;background:#fff;border-radius:8px;padding:9px 10px;font-size:14px;color:#5a2a28}
   .reason::placeholder{color:#C9908C}
   .reason.bad{border-color:var(--red);box-shadow:0 0 0 3px rgba(180,35,42,.12)}
   .dash-mark{color:#CFC6B8}
@@ -568,7 +568,7 @@
   function rowHtml(tab, i, text){
     var a = st.ans[id(tab,i)] || {}, isOk = a.a==='ok', isNo = a.a==='no';
     var rz = isNo
-      ? '<input class="reason" data-reason="'+i+'" placeholder="Why wasn\'t this done?" value="'+esc(a.r||'')+'">'
+      ? '<textarea class="reason" rows="1" data-reason="'+i+'" placeholder="Why wasn\'t this done?">'+esc(a.r||'')+'</textarea>'
       : '<span class="dash-mark">–</span>';
     return '<div class="crow'+(isNo?' no':'')+'" data-row="'+i+'">'+
       '<span class="n">'+(i+1)+'</span><span class="t">'+esc(text)+'</span>'+
@@ -598,6 +598,7 @@
     }
 
     $('rows').innerHTML = L.tabs[tab].map(function(t,i){ return rowHtml(tab,i,t); }).join('');
+    fitAll();
     if (L.together && idx < names.length-1) {
       var next = names[idx+1];
       $('lFoot').innerHTML = '<span></span><button class="btn k" data-go="'+esc(next)+'">Next: '+esc(next)+' checks '+ICONS.arrow+'</button>';
@@ -609,6 +610,8 @@
     }
   }
 
+  function fit(t){ t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+  function fitAll(){ document.querySelectorAll('#rows .reason').forEach(fit); }
   function goTab(t){ st.tab = t; save(); render(); window.scrollTo(0,0); }
   $('lTabs').addEventListener('click', function(e){ var t = e.target.closest('[data-tab]'); if (t) goTab(t.getAttribute('data-tab')); });
 
@@ -620,13 +623,14 @@
     save();
     b.closest('.crow').outerHTML = rowHtml(st.tab, i, L.tabs[st.tab][i]);
     renderTabs();
-    if (v === 'no' && st.ans[k]) { var inp = document.querySelector('[data-reason="'+i+'"]'); if (inp) inp.focus(); }
+    if (v === 'no' && st.ans[k]) { var inp = document.querySelector('[data-reason="'+i+'"]'); if (inp) { fit(inp); inp.focus(); } }
   });
 
   $('rows').addEventListener('input', function(e){
     var inp = e.target.closest('[data-reason]'); if (!inp) return;
     var k = id(st.tab, +inp.getAttribute('data-reason'));
     if (st.ans[k]) { st.ans[k].r = inp.value; save(); }
+    fit(inp);
     inp.classList.remove('bad');
     var fe = $('formErr'); if (fe) fe.textContent = '';
   });
